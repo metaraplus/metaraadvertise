@@ -28,6 +28,8 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
   const [showDocGen, setShowDocGen] = useState(false);
   const [docType, setDocType] = useState<'quotation' | 'invoice'>('quotation');
 
+  const [creationStatus, setCreationStatus] = useState<Advertisement['status']>('Draft');
+
   const [formData, setFormData] = useState({
     clientId: '',
     items: [{ id: Math.random().toString(), packageName: 'Advertorial', serviceType: 'Banner Ads Web', quantity: 1, price: 1600000, totalPrice: 1600000 }],
@@ -120,7 +122,7 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
         items: formData.items,
         totalPrice: totalPrice,
         period: formData.period,
-        status: 'Draft'
+        status: creationStatus
       });
     }
 
@@ -153,13 +155,22 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
           <h2 className="text-2xl font-display font-bold">Advertisements</h2>
           <p className="text-sm text-slate-500">Track and manage advertisement orders</p>
         </div>
-        <button 
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-100"
-        >
-          <Plus size={18} />
-          Buat Iklan Baru
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => { setCreationStatus('Draft'); setEditingAd(null); setShowForm(true); }}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-100"
+          >
+            <Plus size={18} />
+            Buat Surat Penawaran
+          </button>
+          <button 
+            onClick={() => { setCreationStatus('Invoiced'); setEditingAd(null); setShowForm(true); }}
+            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-amber-100"
+          >
+            <Receipt size={18} />
+            Buat Invoice
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -226,21 +237,6 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
                       >
                         <Trash2 size={16} />
                       </button>
-                      <button 
-                        onClick={() => handleDocGen(ad, 'quotation')}
-                        title="Generate Penawaran"
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                      >
-                        <FileText size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleDocGen(ad, 'invoice')}
-                        title="Generate Invoice"
-                        className={`${ad.status === 'Draft' ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'} p-2 rounded-lg transition-all`}
-                        disabled={ad.status === 'Draft'}
-                      >
-                        <Receipt size={18} />
-                      </button>
                       {ad.status === 'Invoiced' && (
                         <button 
                           onClick={() => updateAdStatus(ad.id!, 'Paid')}
@@ -250,6 +246,13 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
                           <CheckCircle2 size={18} />
                         </button>
                       )}
+                      <button 
+                        onClick={() => handleDocGen(ad, ad.status === 'Draft' || ad.status === 'Quotation Sent' ? 'quotation' : 'invoice')}
+                        className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all flex items-center gap-1 text-[10px] font-bold"
+                      >
+                        {ad.status === 'Draft' || ad.status === 'Quotation Sent' ? <FileText size={16} /> : <Receipt size={16} />}
+                        VIEW
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -271,7 +274,7 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-bold text-slate-800 tracking-tight">{editingAd ? 'Edit Order Iklan' : 'Order Iklan Baru'}</h3>
+              <h3 className="text-lg font-bold text-slate-800 tracking-tight">{editingAd ? 'Edit Order Iklan' : (creationStatus === 'Draft' ? 'Buat Surat Penawaran Baru' : 'Buat Invoice Baru')}</h3>
               <button onClick={() => { 
                 setShowForm(false); 
                 setEditingAd(null);

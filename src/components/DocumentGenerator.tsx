@@ -67,6 +67,7 @@ PT. Portal Digital Media Nusantara`;
           contentMarkup: content,
           recipientInfo: `${client.name}\n${client.address}`
         });
+        await adService.updateAd(ad.id!, { status: 'Quotation Sent' });
       } else {
         await adService.saveInvoice({
           adId: ad.id!,
@@ -75,6 +76,7 @@ PT. Portal Digital Media Nusantara`;
           paymentStatus: 'Unpaid',
           contentMarkup: content
         });
+        await adService.updateAd(ad.id!, { status: 'Invoiced' });
       }
       setTimeout(() => {
         window.print();
