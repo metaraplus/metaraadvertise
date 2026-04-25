@@ -101,69 +101,66 @@ export const adService = {
     } catch (e) { handleFirestoreError(e, OperationType.DELETE, `ads/${id}`); }
   },
 
-  // Quotation Number Generator
-  async getNextQuotationNumber() {
+  // Unified Number Generator
+  async getUnifiedNextNumber() {
     const currentYear = new Date().getFullYear();
     const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     const month = romanMonths[new Date().getMonth()];
 
     try {
-      const q = query(
-        collection(db, 'quotations'), 
-        orderBy('number', 'desc'), 
-        limit(50) // Check recent docs to find highest in current year
-      );
-      const snapshot = await getDocs(q);
+      // Query both collections
+      const qQuotes = query(collection(db, 'quotations'), orderBy('number', 'desc'), limit(50));
+      const qInvoices = query(collection(db, 'invoices'), orderBy('number', 'desc'), limit(50));
+      
+      const [snapQuotes, snapInvoices] = await Promise.all([
+        getDocs(qQuotes),
+        getDocs(qInvoices)
+      ]);
       
       let maxCount = 0;
-      snapshot.docs.forEach(doc => {
-        const num = doc.data().number;
-        const parts = num.split('/');
-        if (parts.length >= 4 && parseInt(parts[3]) === currentYear) {
+      
+      const processDocs = (snapshot: any) => {
+        snapshot.docs.forEach((doc: any) => {
+          const num = doc.data().number;
+          const parts = num.split('/');
+          // First part is usually the count
           const count = parseInt(parts[0]);
-          if (!isNaN(count) && count > maxCount) maxCount = count;
-        }
-      });
+          if (isNaN(count)) return;
 
-      const nextCount = maxCount + 1;
-      return `${String(nextCount).padStart(3, '0')}/METARA/${month}/${currentYear}`;
+          // Find the year in parts (checked against current year)
+          // Look for any part that matches current year string
+          const hasYear = parts.some((p: string) => p === String(currentYear));
+          
+          if (hasYear && count > maxCount) {
+            maxCount = count;
+          }
+        });
+      };
+
+      processDocs(snapQuotes);
+      processDocs(snapInvoices);
+
+      return {
+        nextCount: maxCount + 1,
+        month,
+        year: currentYear
+      };
     } catch (e) {
-      console.error("Error getting next quotation number, falling back to sequence", e);
-      // Fallback to simple counter if query fails
-      return `001/METARA/${month}/${currentYear}`;
+      console.error("Error getting unified next number", e);
+      return { nextCount: 1, month, year: currentYear };
     }
+  },
+
+  // Quotation Number Generator
+  async getNextQuotationNumber() {
+    const { nextCount, month, year } = await this.getUnifiedNextNumber();
+    return `${String(nextCount).padStart(3, '0')}/METARA/${month}/${year}`;
   },
 
   // Invoice Number Generator
   async getNextInvoiceNumber() {
-    const currentYear = new Date().getFullYear();
-    const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-    const month = romanMonths[new Date().getMonth()];
-
-    try {
-      const q = query(
-        collection(db, 'invoices'), 
-        orderBy('number', 'desc'), 
-        limit(50)
-      );
-      const snapshot = await getDocs(q);
-      
-      let maxCount = 0;
-      snapshot.docs.forEach(doc => {
-        const num = doc.data().number;
-        const parts = num.split('/');
-        if (parts.length >= 5 && parseInt(parts[4]) === currentYear) {
-          const count = parseInt(parts[0]);
-          if (!isNaN(count) && count > maxCount) maxCount = count;
-        }
-      });
-
-      const nextCount = maxCount + 1;
-      return `${String(nextCount).padStart(3, '0')}/SPJ/METARA/${month}/${currentYear}`;
-    } catch (e) {
-      console.error("Error getting next invoice number, falling back to sequence", e);
-      return `001/SPJ/METARA/${month}/${currentYear}`;
-    }
+    const { nextCount, month, year } = await this.getUnifiedNextNumber();
+    return `${String(nextCount).padStart(3, '0')}/SPJ/METARA/${month}/${year}`;
   },
 
   // Save Quotation

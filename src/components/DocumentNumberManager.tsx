@@ -183,9 +183,9 @@ export default function DocumentNumberManager() {
               <h3 className="font-bold tracking-tight">Info Penomoran</h3>
            </div>
            <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Nomor surat dihasilkan secara otomatis mengikuti format: <br/>
-              <span className="text-blue-400 font-mono">[No]/MN/[Bulan]/[Tahun]</span> untuk Penawaran dan <br/>
-              <span className="text-amber-400 font-mono">[No]/INV/MN/[Bulan]/[Tahun]</span> untuk Invoice.
+              Nomor surat dihasilkan secara otomatis mengikuti format sekuen tunggal: <br/>
+              <span className="text-blue-400 font-mono">[No]/METARA/[Bulan]/[Tahun]</span> untuk Penawaran dan <br/>
+              <span className="text-amber-400 font-mono">[No]/SPJ/METARA/[Bulan]/[Tahun]</span> untuk Invoice.
            </p>
            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-800 pt-4">
               PT. Portal Digital Media Nusantara
