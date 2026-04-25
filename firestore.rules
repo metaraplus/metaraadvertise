@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(email) {
+      return isSignedIn() && request.auth.token.email == email;
+    }
+
+    // Basic admin check for the user who requested the app
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'metaraplus.metaranews@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    match /clients/{clientId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /ads/{adId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /quotations/{quotationId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /sequences/{sequenceId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

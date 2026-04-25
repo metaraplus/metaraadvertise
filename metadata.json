@@ -1,0 +1,6 @@
+{
+  "name": "Metara Ads Database",
+  "description": "Database management for advertisements, quotations, and invoices for metaranews.co (PT Portal Digital Media Nusantara). Includes automated numbering and custom document templates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

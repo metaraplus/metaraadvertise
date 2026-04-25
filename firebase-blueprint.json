@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Details of the advertiser client",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" }
+      },
+      "required": ["name", "address"]
+    },
+    "Ad": {
+      "title": "Advertisement",
+      "description": "Information about a specific advertisement order",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "description": "Reference to the client" },
+        "serviceType": { "type": "string", "description": "Type of service (e.g., Advertorial, Banner Ads)" },
+        "packageName": { "type": "string" },
+        "quantity": { "type": "number" },
+        "price": { "type": "number" },
+        "totalPrice": { "type": "number" },
+        "period": { "type": "string", "description": "Month/Year of the ad" },
+        "status": { "type": "string", "enum": ["Draft", "Quotation Sent", "Invoiced", "Paid", "Cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "serviceType", "totalPrice", "status"]
+    },
+    "Quotation": {
+      "title": "Quotation",
+      "description": "A generated quotation for an ad",
+      "type": "object",
+      "properties": {
+        "adId": { "type": "string" },
+        "number": { "type": "string", "description": "Formatted quotation number" },
+        "date": { "type": "string", "format": "date" },
+        "attachment": { "type": "string" },
+        "subject": { "type": "string" },
+        "contentMarkup": { "type": "string", "description": "The editable content of the letter" },
+        "recipientInfo": { "type": "string" }
+      },
+      "required": ["adId", "number", "date"]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "A generated invoice for an ad",
+      "type": "object",
+      "properties": {
+        "adId": { "type": "string" },
+        "number": { "type": "string", "description": "Formatted invoice number" },
+        "date": { "type": "string", "format": "date" },
+        "paymentStatus": { "type": "string", "enum": ["Unpaid", "Paid"] },
+        "paidAt": { "type": "string", "format": "date-time" },
+        "contentMarkup": { "type": "string" }
+      },
+      "required": ["adId", "number", "date", "paymentStatus"]
+    },
+    "Sequence": {
+      "title": "Sequence",
+      "description": "Counters for generating sequential numbers",
+      "type": "object",
+      "properties": {
+        "quotationCount": { "type": "number" },
+        "invoiceCount": { "type": "number" },
+        "year": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/clients": { "schema": "Client", "description": "Collection of clients" },
+    "/ads": { "schema": "Ad", "description": "Collection of advertisement orders" },
+    "/quotations": { "schema": "Quotation", "description": "Collection of quotations" },
+    "/invoices": { "schema": "Invoice", "description": "Collection of invoices" },
+    "/sequences": { "schema": "Sequence", "description": "Single document to track auto-incrementing numbers" }
+  }
+}
