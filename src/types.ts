@@ -9,14 +9,20 @@ export interface Client {
 
 export type AdStatus = 'Draft' | 'Quotation Sent' | 'Invoiced' | 'Paid' | 'Cancelled';
 
+export interface AdItem {
+  id?: string; // Optional internal ID for editing UI
+  packageName: string;
+  serviceType: string;
+  quantity: number;
+  price: number;
+  totalPrice: number;
+}
+
 export interface Advertisement {
   id?: string;
   clientId: string;
   clientName: string; // Denormalized for easy listing
-  serviceType: string;
-  packageName: string;
-  quantity: number;
-  price: number;
+  items: AdItem[];
   totalPrice: number;
   period: string;
   status: AdStatus;

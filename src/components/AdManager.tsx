@@ -30,12 +30,40 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
 
   const [formData, setFormData] = useState({
     clientId: '',
-    serviceType: 'Banner Ads Web',
-    packageName: 'Advertorial',
-    quantity: 1,
-    price: 1600000,
+    items: [{ id: Math.random().toString(), packageName: 'Advertorial', serviceType: 'Banner Ads Web', quantity: 1, price: 1600000, totalPrice: 1600000 }],
     period: ''
   });
+
+  const calculateTotal = (items: any[]) => items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+
+  const addItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { id: Math.random().toString(), packageName: '', serviceType: '', quantity: 1, price: 0, totalPrice: 0 }]
+    }));
+  };
+
+  const removeItem = (id: string) => {
+    if (formData.items.length <= 1) return;
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.id !== id)
+    }));
+  };
+
+  const updateItem = (id: string, field: string, value: any) => {
+    setFormData(prev => {
+      const newItems = prev.items.map(item => {
+        if (item.id === id) {
+          const updated = { ...item, [field]: value };
+          updated.totalPrice = updated.quantity * updated.price;
+          return updated;
+        }
+        return item;
+      });
+      return { ...prev, items: newItems };
+    });
+  };
 
   useEffect(() => {
     loadData();
@@ -56,10 +84,7 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
     setEditingAd(ad);
     setFormData({
       clientId: ad.clientId,
-      serviceType: ad.serviceType,
-      packageName: ad.packageName,
-      quantity: ad.quantity,
-      price: ad.price,
+      items: (ad.items || []).map(item => ({ ...item, id: item.id || Math.random().toString() })),
       period: ad.period
     });
     setShowForm(true);
@@ -78,32 +103,33 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
     const client = clients.find(c => c.id === formData.clientId);
     if (!client) return;
 
+    const totalPrice = calculateTotal(formData.items);
+
     if (editingAd) {
       await adService.updateAd(editingAd.id!, {
         clientId: formData.clientId,
         clientName: client.name,
-        serviceType: formData.serviceType,
-        packageName: formData.packageName,
-        quantity: formData.quantity,
-        price: formData.price,
-        totalPrice: formData.quantity * formData.price,
+        items: formData.items,
+        totalPrice: totalPrice,
         period: formData.period
       });
     } else {
       await adService.addAd({
         clientId: formData.clientId,
         clientName: client.name,
-        serviceType: formData.serviceType,
-        packageName: formData.packageName,
-        quantity: formData.quantity,
-        price: formData.price,
-        totalPrice: formData.quantity * formData.price,
+        items: formData.items,
+        totalPrice: totalPrice,
         period: formData.period,
         status: 'Draft'
       });
     }
 
     setEditingAd(null);
+    setFormData({
+      clientId: '',
+      items: [{ id: Math.random().toString(), packageName: 'Advertorial', serviceType: 'Banner Ads Web', quantity: 1, price: 1600000, totalPrice: 1600000 }],
+      period: ''
+    });
     setShowForm(false);
     loadData();
     onAdUpdate();
@@ -157,11 +183,23 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
                 <tr key={ad.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <p className="font-bold text-sm text-slate-900 uppercase tracking-tight">{ad.clientName}</p>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">{ad.packageName} • {ad.serviceType}</p>
+                    <div className="mt-1 space-y-0.5">
+                      {ad.items && ad.items.length > 0 ? (
+                        ad.items.map((item, idx) => (
+                          <p key={idx} className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+                            {item.packageName} • {item.serviceType} ({item.quantity}x)
+                          </p>
+                        ))
+                      ) : (
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+                          {(ad as any).packageName || '-'} • {(ad as any).serviceType || '-'} ({(ad as any).quantity || 1}x)
+                        </p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm font-bold text-slate-800">Rp {ad.totalPrice.toLocaleString('id-ID')}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{ad.quantity}x unit @ Rp {ad.price.toLocaleString('id-ID')}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{ad.items?.length || 1} Macam Paket</p>
                   </td>
                   <td className="px-6 py-4">
                    <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
@@ -234,11 +272,19 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
           <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-lg font-bold text-slate-800 tracking-tight">{editingAd ? 'Edit Order Iklan' : 'Order Iklan Baru'}</h3>
-              <button onClick={() => { setShowForm(false); setEditingAd(null); }} className="text-slate-400 hover:text-slate-600 p-2">
+              <button onClick={() => { 
+                setShowForm(false); 
+                setEditingAd(null);
+                setFormData({
+                  clientId: '',
+                  items: [{ id: Math.random().toString(), packageName: 'Advertorial', serviceType: 'Banner Ads Web', quantity: 1, price: 1600000, totalPrice: 1600000 }],
+                  period: ''
+                });
+              }} className="text-slate-400 hover:text-slate-600 p-2">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleCreateAd} className="p-6 space-y-4 text-sm">
+            <form onSubmit={handleCreateAd} className="p-6 space-y-4 text-sm max-h-[80vh] overflow-y-auto scrollbar-thin">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilih Klien</label>
                 <select 
@@ -251,48 +297,80 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
                   {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Paket</label>
-                  <input 
-                    type="text" 
-                    value={formData.packageName}
-                    onChange={e => setFormData({...formData, packageName: e.target.value})}
-                    placeholder="e.g. Advertorial"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
-                  />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Daftar Paket & Layanan</label>
+                  <button 
+                    type="button"
+                    onClick={addItem}
+                    className="text-[10px] font-bold text-blue-600 flex items-center gap-1 hover:underline"
+                  >
+                    <Plus size={12} /> Tambah Paket
+                  </button>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jenis Layanan</label>
-                  <input 
-                    type="text" 
-                    value={formData.serviceType}
-                    onChange={e => setFormData({...formData, serviceType: e.target.value})}
-                    placeholder="e.g. Banner Ads Web"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
-                  />
-                </div>
+                
+                {formData.items.map((item, index) => (
+                  <div key={item.id} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl relative space-y-3">
+                    {formData.items.length > 1 && (
+                      <button 
+                        type="button"
+                        onClick={() => removeItem(item.id!)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Nama Paket</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={item.packageName}
+                          onChange={e => updateItem(item.id!, 'packageName', e.target.value)}
+                          placeholder="e.g. Advertorial"
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Jenis Layanan</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={item.serviceType}
+                          onChange={e => updateItem(item.id!, 'serviceType', e.target.value)}
+                          placeholder="e.g. Banner Ads"
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">QTY</label>
+                        <input 
+                          type="number" 
+                          required
+                          value={item.quantity}
+                          onChange={e => updateItem(item.id!, 'quantity', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Unit Price</label>
+                        <input 
+                          type="number" 
+                          required
+                          value={item.price}
+                          onChange={e => updateItem(item.id!, 'price', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">QTY / Frekuensi</label>
-                  <input 
-                    type="number" 
-                    value={formData.quantity}
-                    onChange={e => setFormData({...formData, quantity: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Unit Price (Rp)</label>
-                  <input 
-                    type="number" 
-                    value={formData.price}
-                    onChange={e => setFormData({...formData, price: parseInt(e.target.value) || 0})}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-mono"
-                  />
-                </div>
-              </div>
+
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Periode Penempatan</label>
                 <input 
@@ -307,7 +385,7 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
               <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Total Tagihan</p>
-                  <p className="font-black text-xl text-slate-900 leading-tight">Rp {(formData.quantity * formData.price).toLocaleString('id-ID')}</p>
+                  <p className="font-black text-xl text-slate-900 leading-tight">Rp {calculateTotal(formData.items).toLocaleString('id-ID')}</p>
                 </div>
                 <div className="flex gap-3">
                   <button 

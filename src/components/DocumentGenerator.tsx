@@ -222,16 +222,31 @@ PT. Portal Digital Media Nusantara`;
                   <tr className="bg-red-600 text-white text-xs text-left">
                     <th className="border border-red-600 p-2 font-bold">Paket Iklan</th>
                     <th className="border border-red-600 p-2 font-bold">Jenis Jasa</th>
-                    <th className="border border-red-600 p-2 font-bold">Jumlah Tayang</th>
+                    <th className="border border-red-600 p-2 font-bold">QTY</th>
                     <th className="border border-red-600 p-2 font-bold text-right">Harga</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="text-xs">
-                    <td className="border border-slate-200 p-2">{ad.packageName}</td>
-                    <td className="border border-slate-200 p-2">{ad.serviceType}</td>
-                    <td className="border border-slate-200 p-2">{ad.period}</td>
-                    <td className="border border-slate-200 p-2 text-right">Rp {ad.price.toLocaleString('id-ID')}</td>
+                  {ad.items && ad.items.length > 0 ? (
+                    ad.items.map((item, idx) => (
+                      <tr key={idx} className="text-xs">
+                        <td className="border border-slate-200 p-2">{item.packageName}</td>
+                        <td className="border border-slate-200 p-2">{item.serviceType}</td>
+                        <td className="border border-slate-200 p-2">{item.quantity}x</td>
+                        <td className="border border-slate-200 p-2 text-right">Rp {item.price.toLocaleString('id-ID')}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className="text-xs">
+                      <td className="border border-slate-200 p-2">{(ad as any).packageName || '-'}</td>
+                      <td className="border border-slate-200 p-2">{(ad as any).serviceType || '-'}</td>
+                      <td className="border border-slate-200 p-2">{(ad as any).quantity || '1'}x</td>
+                      <td className="border border-slate-200 p-2 text-right">Rp {((ad as any).price || 0).toLocaleString('id-ID')}</td>
+                    </tr>
+                  )}
+                  <tr className="text-xs font-bold bg-slate-50">
+                    <td colSpan={3} className="border border-slate-200 p-2 text-right">Total Seluruhnya</td>
+                    <td className="border border-slate-200 p-2 text-right">Rp {ad.totalPrice.toLocaleString('id-ID')}</td>
                   </tr>
                 </tbody>
               </table>
@@ -293,13 +308,25 @@ PT. Portal Digital Media Nusantara`;
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-slate-50/30">
-                            <tr className="h-48 align-top">
-                                <td className="px-6 py-4 font-bold text-slate-700">{ad.packageName} {ad.serviceType}</td>
-                                <td className="px-6 py-4 font-medium text-slate-500">{ad.quantity}</td>
-                                <td className="px-6 py-4 font-medium text-slate-500">{ad.period}</td>
-                                <td className="px-6 py-4 font-medium text-slate-500 text-nowrap">Rp {ad.price.toLocaleString('id-ID')}</td>
-                                <td className="px-6 py-4 font-bold text-slate-900 text-right text-nowrap">Rp {ad.totalPrice.toLocaleString('id-ID')}</td>
-                            </tr>
+                            {ad.items && ad.items.length > 0 ? (
+                                ad.items.map((item, idx) => (
+                                    <tr key={idx} className="align-top">
+                                        <td className="px-6 py-4 font-bold text-slate-700">{item.packageName} {item.serviceType}</td>
+                                        <td className="px-6 py-4 font-medium text-slate-500">{item.quantity}</td>
+                                        <td className="px-6 py-4 font-medium text-slate-500">{ad.period}</td>
+                                        <td className="px-6 py-4 font-medium text-slate-500 text-nowrap">Rp {item.price.toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 font-bold text-slate-900 text-right text-nowrap">Rp {item.totalPrice.toLocaleString('id-ID')}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr className="align-top">
+                                    <td className="px-6 py-4 font-bold text-slate-700">{(ad as any).packageName} {(ad as any).serviceType}</td>
+                                    <td className="px-6 py-4 font-medium text-slate-500">{(ad as any).quantity}</td>
+                                    <td className="px-6 py-4 font-medium text-slate-500">{ad.period}</td>
+                                    <td className="px-6 py-4 font-medium text-slate-500 text-nowrap">Rp {((ad as any).price || 0).toLocaleString('id-ID')}</td>
+                                    <td className="px-6 py-4 font-bold text-slate-900 text-right text-nowrap">Rp {ad.totalPrice.toLocaleString('id-ID')}</td>
+                                </tr>
+                            )}
                         </tbody>
                         <tfoot>
                             <tr className="bg-slate-50">

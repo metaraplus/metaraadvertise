@@ -11,7 +11,8 @@ import {
   serverTimestamp,
   runTransaction,
   writeBatch,
-  deleteDoc
+  deleteDoc,
+  limit
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Advertisement, Client, Quotation, Invoice, Sequence } from '../types';
@@ -102,60 +103,67 @@ export const adService = {
 
   // Quotation Number Generator
   async getNextQuotationNumber() {
-    const sequenceRef = doc(db, 'sequences', 'main');
     const currentYear = new Date().getFullYear();
-    
-    return await runTransaction(db, async (transaction) => {
-      const seqDoc = await transaction.get(sequenceRef);
-      let data: Sequence;
+    const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    const month = romanMonths[new Date().getMonth()];
+
+    try {
+      const q = query(
+        collection(db, 'quotations'), 
+        orderBy('number', 'desc'), 
+        limit(50) // Check recent docs to find highest in current year
+      );
+      const snapshot = await getDocs(q);
       
-      if (!seqDoc.exists()) {
-        data = { id: 'main', quotationCount: 1, invoiceCount: 0, year: currentYear };
-        transaction.set(sequenceRef, data);
-      } else {
-        const existingData = seqDoc.data() as Sequence;
-        if (existingData.year !== currentYear) {
-          data = { ...existingData, quotationCount: 1, year: currentYear };
-        } else {
-          data = { ...existingData, quotationCount: existingData.quotationCount + 1 };
+      let maxCount = 0;
+      snapshot.docs.forEach(doc => {
+        const num = doc.data().number;
+        const parts = num.split('/');
+        if (parts.length >= 4 && parseInt(parts[3]) === currentYear) {
+          const count = parseInt(parts[0]);
+          if (!isNaN(count) && count > maxCount) maxCount = count;
         }
-        transaction.update(sequenceRef, { quotationCount: data.quotationCount, year: currentYear });
-      }
-      
-      // Format: 186/METARA/VIII/2025
-      const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-      const month = romanMonths[new Date().getMonth()];
-      return `${String(data.quotationCount).padStart(3, '0')}/METARA/${month}/${currentYear}`;
-    });
+      });
+
+      const nextCount = maxCount + 1;
+      return `${String(nextCount).padStart(3, '0')}/METARA/${month}/${currentYear}`;
+    } catch (e) {
+      console.error("Error getting next quotation number, falling back to sequence", e);
+      // Fallback to simple counter if query fails
+      return `001/METARA/${month}/${currentYear}`;
+    }
   },
 
   // Invoice Number Generator
   async getNextInvoiceNumber() {
-    const sequenceRef = doc(db, 'sequences', 'main');
     const currentYear = new Date().getFullYear();
-    
-    return await runTransaction(db, async (transaction) => {
-      const seqDoc = await transaction.get(sequenceRef);
-      let data: Sequence;
+    const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    const month = romanMonths[new Date().getMonth()];
+
+    try {
+      const q = query(
+        collection(db, 'invoices'), 
+        orderBy('number', 'desc'), 
+        limit(50)
+      );
+      const snapshot = await getDocs(q);
       
-      if (!seqDoc.exists()) {
-        data = { id: 'main', quotationCount: 0, invoiceCount: 1, year: currentYear };
-        transaction.set(sequenceRef, data);
-      } else {
-        const existingData = seqDoc.data() as Sequence;
-        if (existingData.year !== currentYear) {
-          data = { ...existingData, invoiceCount: 1, year: currentYear };
-        } else {
-          data = { ...existingData, invoiceCount: existingData.invoiceCount + 1 };
+      let maxCount = 0;
+      snapshot.docs.forEach(doc => {
+        const num = doc.data().number;
+        const parts = num.split('/');
+        if (parts.length >= 5 && parseInt(parts[4]) === currentYear) {
+          const count = parseInt(parts[0]);
+          if (!isNaN(count) && count > maxCount) maxCount = count;
         }
-        transaction.update(sequenceRef, { invoiceCount: data.invoiceCount, year: currentYear });
-      }
-      
-      // Format: 230/SPJ/METARA/IV/2026
-      const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-      const month = romanMonths[new Date().getMonth()];
-      return `${String(data.invoiceCount).padStart(3, '0')}/SPJ/METARA/${month}/${currentYear}`;
-    });
+      });
+
+      const nextCount = maxCount + 1;
+      return `${String(nextCount).padStart(3, '0')}/SPJ/METARA/${month}/${currentYear}`;
+    } catch (e) {
+      console.error("Error getting next invoice number, falling back to sequence", e);
+      return `001/SPJ/METARA/${month}/${currentYear}`;
+    }
   },
 
   // Save Quotation

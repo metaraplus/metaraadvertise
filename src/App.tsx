@@ -275,7 +275,9 @@ function Dashboard({ ads }: { ads: Advertisement[] }) {
                   </div>
                   <div>
                     <p className="font-bold text-sm text-slate-800 uppercase tracking-tight">{ad.clientName}</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{ad.serviceType} • {ad.period}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                      {ad.items?.[0]?.serviceType || 'Iklan'} {ad.items?.length > 1 ? `(+${ad.items.length - 1})` : ''} • {ad.period}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6">
