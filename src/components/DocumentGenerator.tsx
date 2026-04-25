@@ -184,7 +184,14 @@ PT. Portal Digital Media Nusantara`;
           {/* Letterhead */}
           <div className="flex justify-between items-start border-b-2 border-slate-100 pb-8 mb-12">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-red-600 rounded-2xl flex items-center justify-center text-white font-display font-black text-4xl">M</div>
+              <div className="w-20 h-20 overflow-hidden rounded-2xl bg-white p-1">
+                 <img 
+                   src="https://lh3.googleusercontent.com/d/1jrnekXXK3GARE-oM-LnhIw4tc6wOSLEt" 
+                   alt="Logo" 
+                   className="w-full h-full object-contain"
+                   referrerPolicy="no-referrer"
+                 />
+              </div>
               <div className="space-y-1">
                 <h1 className="text-[#333] font-bold text-lg tracking-tight uppercase leading-tight italic">Metara</h1>
                 <p className="text-[10px] font-medium text-red-600 italic -mt-1">Setara Bercerita</p>

@@ -69,8 +69,13 @@ export default function App() {
           className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center"
         >
           <div className="mb-8">
-            <div className="w-20 h-20 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden p-3">
-               <div className="w-full h-full text-white font-display font-black text-2xl flex items-center justify-center">M</div>
+            <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-2xl bg-white p-2">
+               <img 
+                 src="https://lh3.googleusercontent.com/d/1jrnekXXK3GARE-oM-LnhIw4tc6wOSLEt" 
+                 alt="Metara Logo" 
+                 className="w-full h-full object-contain"
+                 referrerPolicy="no-referrer"
+               />
             </div>
             <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Metara Ads DB</h1>
             <p className="text-slate-500 italic">PT. Portal Digital Media Nusantara</p>
@@ -94,8 +99,13 @@ export default function App() {
       <aside className="w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 z-50 shadow-2xl">
         <div className="p-6 border-b border-slate-800">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-500/20 font-bold text-xl text-white italic">
-              M
+            <div className="w-10 h-10 bg-white rounded flex items-center justify-center shadow-lg p-1 overflow-hidden">
+               <img 
+                 src="https://lh3.googleusercontent.com/d/1jrnekXXK3GARE-oM-LnhIw4tc6wOSLEt" 
+                 alt="Logo" 
+                 className="w-full h-full object-contain"
+                 referrerPolicy="no-referrer"
+               />
             </div>
             <span className="font-bold tracking-tight text-lg">metaranews.co</span>
           </div>
