@@ -10,7 +10,9 @@ import {
   MoreVertical,
   Calendar,
   DollarSign,
-  X
+  X,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import { adService } from '../services/adService';
 import { Advertisement, Client } from '../types';
@@ -22,6 +24,7 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedAd, setSelectedAd] = useState<Advertisement | null>(null);
+  const [editingAd, setEditingAd] = useState<Advertisement | null>(null);
   const [showDocGen, setShowDocGen] = useState(false);
   const [docType, setDocType] = useState<'quotation' | 'invoice'>('quotation');
 
@@ -49,23 +52,58 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
     setLoading(false);
   };
 
+  const handleEdit = (ad: Advertisement) => {
+    setEditingAd(ad);
+    setFormData({
+      clientId: ad.clientId,
+      serviceType: ad.serviceType,
+      packageName: ad.packageName,
+      quantity: ad.quantity,
+      price: ad.price,
+      period: ad.period
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus iklan ini?')) {
+      await adService.deleteAd(id);
+      loadData();
+      onAdUpdate();
+    }
+  };
+
   const handleCreateAd = async (e: React.FormEvent) => {
     e.preventDefault();
     const client = clients.find(c => c.id === formData.clientId);
     if (!client) return;
 
-    await adService.addAd({
-      clientId: formData.clientId,
-      clientName: client.name,
-      serviceType: formData.serviceType,
-      packageName: formData.packageName,
-      quantity: formData.quantity,
-      price: formData.price,
-      totalPrice: formData.quantity * formData.price,
-      period: formData.period,
-      status: 'Draft'
-    });
+    if (editingAd) {
+      await adService.updateAd(editingAd.id!, {
+        clientId: formData.clientId,
+        clientName: client.name,
+        serviceType: formData.serviceType,
+        packageName: formData.packageName,
+        quantity: formData.quantity,
+        price: formData.price,
+        totalPrice: formData.quantity * formData.price,
+        period: formData.period
+      });
+    } else {
+      await adService.addAd({
+        clientId: formData.clientId,
+        clientName: client.name,
+        serviceType: formData.serviceType,
+        packageName: formData.packageName,
+        quantity: formData.quantity,
+        price: formData.price,
+        totalPrice: formData.quantity * formData.price,
+        period: formData.period,
+        status: 'Draft'
+      });
+    }
 
+    setEditingAd(null);
     setShowForm(false);
     loadData();
     onAdUpdate();
@@ -137,6 +175,20 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button 
+                        onClick={() => handleEdit(ad)}
+                        title="Edit Iklan"
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(ad.id!)}
+                        title="Hapus Iklan"
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                      <button 
                         onClick={() => handleDocGen(ad, 'quotation')}
                         title="Generate Penawaran"
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
@@ -181,8 +233,8 @@ export default function AdManager({ onAdUpdate }: { onAdUpdate: () => void }) {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-bold text-slate-800 tracking-tight">Order Iklan Baru</h3>
-              <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 p-2">
+              <h3 className="text-lg font-bold text-slate-800 tracking-tight">{editingAd ? 'Edit Order Iklan' : 'Order Iklan Baru'}</h3>
+              <button onClick={() => { setShowForm(false); setEditingAd(null); }} className="text-slate-400 hover:text-slate-600 p-2">
                 <X size={20} />
               </button>
             </div>

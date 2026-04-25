@@ -7,6 +7,7 @@ export default function ClientManager() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [formData, setFormData] = useState<Omit<Client, 'id'>>({
     name: '',
     address: '',
@@ -26,10 +27,34 @@ export default function ClientManager() {
     setLoading(false);
   };
 
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+    setFormData({
+      name: client.name,
+      address: client.address,
+      contactPerson: client.contactPerson || '',
+      email: client.email || '',
+      phone: client.phone || ''
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus klien ini?')) {
+      await adService.deleteClient(id);
+      loadClients();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await adService.addClient(formData);
+    if (editingClient) {
+      await adService.updateClient(editingClient.id, formData);
+    } else {
+      await adService.addClient(formData);
+    }
     setFormData({ name: '', address: '', contactPerson: '', email: '', phone: '' });
+    setEditingClient(null);
     setShowForm(false);
     loadClients();
   };
@@ -63,8 +88,17 @@ export default function ClientManager() {
                   <Users size={20} />
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                  <button 
+                    onClick={() => handleEdit(client)}
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
                     <Edit2 size={16} />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(client.id)}
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
@@ -95,8 +129,8 @@ export default function ClientManager() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-bold text-slate-800 tracking-tight">Register New Client</h3>
-              <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 p-2">
+              <h3 className="text-lg font-bold text-slate-800 tracking-tight">{editingClient ? 'Edit Database Klien' : 'Register New Client'}</h3>
+              <button onClick={() => { setShowForm(false); setEditingClient(null); }} className="text-slate-400 hover:text-slate-600 p-2">
                  <X size={20} />
               </button>
             </div>

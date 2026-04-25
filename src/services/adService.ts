@@ -10,7 +10,8 @@ import {
   orderBy, 
   serverTimestamp,
   runTransaction,
-  writeBatch
+  writeBatch,
+  deleteDoc
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Advertisement, Client, Quotation, Invoice, Sequence } from '../types';
@@ -56,6 +57,18 @@ export const adService = {
     } catch (e) { handleFirestoreError(e, OperationType.CREATE, 'clients'); }
   },
 
+  async updateClient(id: string, updates: Partial<Client>) {
+    try {
+      await updateDoc(doc(db, 'clients', id), updates);
+    } catch (e) { handleFirestoreError(e, OperationType.UPDATE, `clients/${id}`); }
+  },
+
+  async deleteClient(id: string) {
+    try {
+      await deleteDoc(doc(db, 'clients', id));
+    } catch (e) { handleFirestoreError(e, OperationType.DELETE, `clients/${id}`); }
+  },
+
   // Ads
   async getAds() {
     try {
@@ -79,6 +92,12 @@ export const adService = {
     try {
       await updateDoc(doc(db, 'ads', id), updates);
     } catch (e) { handleFirestoreError(e, OperationType.UPDATE, `ads/${id}`); }
+  },
+
+  async deleteAd(id: string) {
+    try {
+      await deleteDoc(doc(db, 'ads', id));
+    } catch (e) { handleFirestoreError(e, OperationType.DELETE, `ads/${id}`); }
   },
 
   // Quotation Number Generator
@@ -161,5 +180,46 @@ export const adService = {
       });
       return docRef.id;
     } catch (e) { handleFirestoreError(e, OperationType.CREATE, 'invoices'); }
+  },
+
+  // Document Database
+  async getQuotations() {
+    try {
+      const q = query(collection(db, 'quotations'), orderBy('date', 'desc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Quotation));
+    } catch (e) { handleFirestoreError(e, OperationType.LIST, 'quotations'); }
+  },
+
+  async updateQuotation(id: string, updates: Partial<Quotation>) {
+    try {
+      await updateDoc(doc(db, 'quotations', id), updates);
+    } catch (e) { handleFirestoreError(e, OperationType.UPDATE, `quotations/${id}`); }
+  },
+
+  async deleteQuotation(id: string) {
+    try {
+      await deleteDoc(doc(db, 'quotations', id));
+    } catch (e) { handleFirestoreError(e, OperationType.DELETE, `quotations/${id}`); }
+  },
+
+  async getInvoices() {
+    try {
+      const q = query(collection(db, 'invoices'), orderBy('date', 'desc'));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Invoice));
+    } catch (e) { handleFirestoreError(e, OperationType.LIST, 'invoices'); }
+  },
+
+  async updateInvoice(id: string, updates: Partial<Invoice>) {
+    try {
+      await updateDoc(doc(db, 'invoices', id), updates);
+    } catch (e) { handleFirestoreError(e, OperationType.UPDATE, `invoices/${id}`); }
+  },
+
+  async deleteInvoice(id: string) {
+    try {
+      await deleteDoc(doc(db, 'invoices', id));
+    } catch (e) { handleFirestoreError(e, OperationType.DELETE, `invoices/${id}`); }
   }
 };

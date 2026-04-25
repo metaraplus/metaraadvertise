@@ -11,7 +11,8 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  ChevronRight
+  ChevronRight,
+  Hash
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, signInWithGoogle, logout } from './lib/firebase';
@@ -22,8 +23,9 @@ import { Advertisement, AdStatus } from './types';
 // Components
 import ClientManager from './components/ClientManager';
 import AdManager from './components/AdManager';
+import DocumentNumberManager from './components/DocumentNumberManager';
 
-type Tab = 'dashboard' | 'clients' | 'ads';
+type Tab = 'dashboard' | 'clients' | 'ads' | 'numbers';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -115,6 +117,12 @@ export default function App() {
             onClick={() => setActiveTab('clients')} 
           />
           <NavItem 
+            icon={<Hash size={18} />} 
+            label="Nomor Surat" 
+            active={activeTab === 'numbers'} 
+            onClick={() => setActiveTab('numbers')} 
+          />
+          <NavItem 
             icon={<Receipt size={18} />} 
             label="Ads & Penagihan" 
             active={activeTab === 'ads'} 
@@ -188,6 +196,16 @@ export default function App() {
                 exit={{ opacity: 0, x: -10 }}
               >
                 <AdManager onAdUpdate={refreshData} />
+              </motion.div>
+            )}
+            {activeTab === 'numbers' && (
+              <motion.div
+                key="numbers"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+              >
+                <DocumentNumberManager />
               </motion.div>
             )}
           </AnimatePresence>
