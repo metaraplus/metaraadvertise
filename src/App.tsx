@@ -62,26 +62,36 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#f3f4f6] p-4 font-sans">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center"
+          className="w-full max-w-xl p-12 bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] text-center border border-white/50"
         >
-          <div className="mb-8">
-            <div className="w-20 h-20 bg-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 overflow-hidden p-3">
-               <div className="w-full h-full text-white font-display font-black text-2xl flex items-center justify-center">M</div>
+          <div className="mb-12">
+            <div className="w-56 h-56 mx-auto mb-10 flex items-center justify-center">
+               <img 
+                 src="https://metaranews.co/wp-content/uploads/2022/10/logo-metara-news-network.png" 
+                 alt="Metaranews Logo" 
+                 className="w-full h-full object-contain"
+                 referrerPolicy="no-referrer"
+               />
             </div>
-            <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Metara Ads DB</h1>
-            <p className="text-slate-500 italic">PT. Portal Digital Media Nusantara</p>
+            <h1 className="text-6xl font-black text-[#0f172a] mb-4 tracking-tighter">Metaranews.co</h1>
+            <p className="text-2xl font-medium text-[#64748b] tracking-tight">Sistem Manajemen Surat & Invoice</p>
           </div>
           
           <button
             onClick={signInWithGoogle}
-            className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-3"
+            className="w-full py-6 px-10 bg-[#e10606] hover:bg-[#c40505] text-white rounded-[1.25rem] font-bold text-2xl transition-all flex items-center justify-between group shadow-[0_10px_30px_rgba(225,6,6,0.3)] hover:shadow-[0_15px_40px_rgba(225,6,6,0.4)]"
           >
-            <LogIn size={20} />
-            Sign in with Google
+            <div className="flex items-center gap-4">
+              <div className="p-2 rounded-lg bg-white/20">
+                <LogIn size={28} className="text-white" />
+              </div>
+              <span className="tracking-tight">Login dengan Google</span>
+            </div>
+            <ChevronRight size={32} className="opacity-50 group-hover:opacity-100 transition-opacity" />
           </button>
         </motion.div>
       </div>
